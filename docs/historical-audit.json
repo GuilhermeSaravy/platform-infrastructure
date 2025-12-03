@@ -1,0 +1,562 @@
+{
+  "problem": "Northstar Commerce needs consistent Azure project onboarding, isolated environments, private workloads and destination-owned data grants without managing Entra groups.",
+  "mvp": "Azure-only declarative catalog/orders dev/prod; shared per-environment networks; RG-per-project; UAMI workloads; private storage and web apps; governance; local bootstrap then GitHub OIDC; authored manual checks. No execution beyond file/Git/registry work.",
+  "architecture": {
+    "users": [
+      "platform-engineering",
+      "commerce-backend",
+      "commerce-frontend"
+    ],
+    "ownership": {
+      "organization": "logical requirements, naming, profiles, editable defaults",
+      "network": "one state per environment owns VNet, subnets, NSGs, routing and Private DNS; project deletion retains shared resources",
+      "project": "one resources state and separate access state per project/environment; project discovers shared names with ARM data sources",
+      "identity": "external organization-identity owns teams; sensitive runtime map resolves logical teams",
+      "bootstrap": "local retained state owns remote backend, deployment UAMI and GitHub federated credential; optional explicit migration to separate backend key"
+    },
+    "interfaces": "Project discovery via projects/*/project.yaml; JSON subset of YAML for stdlib checking. Workload grants resolve named UAMI and ARM container ID without reading source state. Shared network platform allocates /26s by unique project network_slot. No dev/prod peering. App Service B1 private ingress and delegated egress; blob private endpoint; no storage keys. Public state endpoint is explicit GitHub-hosted-runner exception protected by Azure AD, no shared keys.",
+    "scope": "No multi-cloud, portal, Kubernetes, AI, Databricks or third-party monitoring. Demonstration is private Python stdlib HTTP app with fixed Blob probes using its UAMI. Public GHCR image pushed manually later.",
+    "cost": "Deploy dev only; B1 per demo app, LRS storage and private endpoints; no prod automatically; VPN/private operator host prerequisite for acceptance.",
+    "cleanup": "Destroy grants, resources then network only when empty; keep shared network for scoped project removal. Bootstrap backend last after offline state backup."
+  },
+  "validation": {
+    "method": "Source reading only during generation; all authored executable checks, tests, plans, builds, workflows, authentication and deployment PENDING manual execution. User prohibition overrides skill executable checks and registry validate command. Helper record metadata reconciliation is allowed.",
+    "acceptance": [
+      "Onboarding, naming/tags, logical team and capability rejection, environment subnet boundaries and ownership",
+      "Policy rejects prohibited region/public storage; false-positive/bootstrap compatibility reviewed manually",
+      "Before separate grant apply catalog cannot read exports; after apply reads succeed, writes/restricted container fail",
+      "Private DNS and HTTPS private connectivity; RBAC bounded retries; test data created by explicit operator identity; cleanup documented"
+    ]
+  },
+  "milestones": [
+    {
+      "id": "declarations",
+      "date": "2025-12-03",
+      "deliverable": "Verified architecture and populated organization/project contracts, reusable template and historical ledger",
+      "acceptance": "Read declarations and audit coverage; executable configuration checks remain pending."
+    },
+    {
+      "id": "foundation",
+      "date": "2025-12-09",
+      "deliverable": "Local bootstrap/OIDC identity, governance and shared per-environment networking",
+      "acceptance": "Read state ownership, security rules, bootstrap dependency and pinned schemas."
+    },
+    {
+      "id": "workloads",
+      "date": "2025-12-17",
+      "deliverable": "Project resources, logical role resolution, explicit contracts and separate destination-owned grants; minimal private demo",
+      "acceptance": "Read network/RBAC split and dependency graph; manual denied-before/after sequence authored."
+    },
+    {
+      "id": "operations",
+      "date": "2025-12-23",
+      "deliverable": "Dispatch-only workflows, input checks, full manual startup, test scripts and cleanup runbooks",
+      "acceptance": "Read secret wiring/log suppression and consistency of commands; all executable verification pending."
+    }
+  ],
+  "improvements": [
+    {
+      "id": "automated-onboarding",
+      "date": "2026-01-17",
+      "baseline": "Reusable template and manual folder creation",
+      "change": "Add local onboarding generator that allocates a free slot and writes project/environment configurations without shared edits.",
+      "acceptance": "Authored fixtures prove no central list edit, collision rejection and grant review; tests pending.",
+      "dependencies": [
+        "platform-infrastructure/operations"
+      ]
+    },
+    {
+      "id": "drift-access-review",
+      "date": "2026-02-21",
+      "baseline": "Manual checks and unit plan/apply workflows",
+      "change": "Add dispatch-only drift/governance/access review orchestration with bounded role checks, safe output, no automatic remediation.",
+      "acceptance": "Authored drift exit-code and role review procedures; all checks pending.",
+      "dependencies": [
+        "platform-infrastructure/automated-onboarding"
+      ]
+    }
+  ],
+  "historical_audit": [
+    {
+      "phase": "initial",
+      "component": "Terraform CLI",
+      "version": "v1.10.5",
+      "available_on": "2025-01-22",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/hashicorp/terraform/releases/tag/v1.10.5",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Terragrunt CLI",
+      "version": "v0.77.22",
+      "available_on": "2025-04-21",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/gruntwork-io/terragrunt/releases/tag/v0.77.22",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "AzureRM provider",
+      "version": "v4.27.0",
+      "available_on": "2025-04-25",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/releases/tag/v4.27.0",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "GitHub checkout action",
+      "version": "v4.2.2",
+      "available_on": "2024-10-23",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/actions/checkout/releases/tag/v4.2.2",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Terraform setup action",
+      "version": "v3.1.2",
+      "available_on": "2024-08-19",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/hashicorp/setup-terraform/releases/tag/v3.1.2",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Azure CLI",
+      "version": "azure-cli-2.70.0",
+      "available_on": "2025-03-04",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/Azure/azure-cli/releases/tag/azure-cli-2.70.0",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Azure implementation schemas",
+      "version": "AzureRM 4.27.0; Web 2023-12-01; Storage 2023-05-01; ManagedIdentity 2023-01-31",
+      "available_on": "2025-04-25",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/tree/v4.27.0/internal/services",
+      "finding": "Tagged resource documentation and implementation inspected for web app VNet/UAMI/container config, ARM storage containers, endpoints/DNS/NSG/routes, roles, policies and federated credentials. No external Terraform modules. Provider bundled SDK resource-manager v0.20250409.1192141 and plugin SDK v2.36.1; no local compilation/resolution.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "App Service private ingress and outbound VNet",
+      "version": "Basic B1 Linux; dedicated /26 Microsoft.Web/serverFarms; separate sites PE",
+      "available_on": "2025-10-06",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/2ec7b89dc220f661e7e100a69dbab0531919c41c/articles/app-service/overview-private-endpoint.md",
+      "finding": "Dated Microsoft docs establish Basic private endpoints; September 4 2025 VNet docs establish Basic integration and /26 capacity. West Europe examples supported; actual quota, SKU availability and current API acceptance pending subscription checks. Ingress PE and egress delegated subnet must differ.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "App Service identity token endpoint",
+      "version": "IDENTITY_ENDPOINT / IDENTITY_HEADER; api-version=2019-08-01",
+      "available_on": "2025-09-01",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/78b5d44c31cd14d2738675c49cd42e5e0fdd8604/articles/app-service/overview-managed-identity.md",
+      "finding": "UAMI client_id selects workload identity; storage audience https://storage.azure.com/. No key or SAS fallback. Cached group/role tokens can delay permissions.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Blob REST bearer authentication",
+      "version": "2023-11-03 service version",
+      "available_on": "2025-10-16",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/7fb491b615047e096374f453ae967856870780db/articles/storage/blobs/authorize-access-azure-active-directory.md",
+      "finding": "Dated identity authorization source plus release/provider schema. REST read/write test uses bearer identity; management Reader/Contributor is distinct from Blob Data Reader.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Python standard library and image",
+      "version": "3.12.8-slim-bookworm@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0",
+      "available_on": "2025-02-04",
+      "needed_on": "2025-12-03",
+      "source_url": "https://hub.docker.com/v2/repositories/library/python/tags/3.12.8-slim-bookworm",
+      "finding": "Public registry metadata read: index last pushed 2025-02-04, linux/amd64 child 8859bd6ca943079262c27e38b7119cdacede77c463139a15651dd340087a6cc9. CPython released 2024-12-03. Digest pins Debian and bundled transitive image contents; no pip dependencies. Old security baseline, reassess before real production use.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "GitHub hosted runner",
+      "version": "ubuntu-24.04 label; hosted image mutable",
+      "available_on": "2024-09-25",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.blog/changelog/2024-09-25-actions-new-images-and-ubuntu-latest-changes/",
+      "finding": "Dated GA announcement read. Label existed; hosted OS image is not byte-reproducible today. Install pinned tools and actions; Terraform uses native GitHub OIDC without CLI or Docker in workflows.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Terraform Azure backend",
+      "version": "Terraform 1.10.5 native Blob lease locking, Azure AD, OIDC",
+      "available_on": "2025-01-22",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/hashicorp/terraform/blob/v1.10.5/website/docs/language/backend/azurerm.mdx",
+      "finding": "Tagged backend docs read; use_azuread_auth, use_oidc, env ARM variables supported. Backend storage is provisioned with local bootstrap state first.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Terragrunt configuration syntax",
+      "version": "0.77.22 include root.hcl / generate / get_env / read_terragrunt_config",
+      "available_on": "2025-04-21",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/gruntwork-io/terragrunt/tree/v0.77.22/docs",
+      "finding": "Pinned source tree inspected. Use legacy terragrunt init/plan/apply working-directory invocation. No run-all dependency or newer stack syntax.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Terraform CLI",
+      "version": "v1.10.5",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/hashicorp/terraform/releases/tag/v1.10.5",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Terragrunt CLI",
+      "version": "v0.77.22",
+      "available_on": "2025-04-21",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/gruntwork-io/terragrunt/releases/tag/v0.77.22",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "AzureRM provider",
+      "version": "v4.27.0",
+      "available_on": "2025-04-25",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/releases/tag/v4.27.0",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "GitHub checkout action",
+      "version": "v4.2.2",
+      "available_on": "2024-10-23",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/actions/checkout/releases/tag/v4.2.2",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Terraform setup action",
+      "version": "v3.1.2",
+      "available_on": "2024-08-19",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/hashicorp/setup-terraform/releases/tag/v3.1.2",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Azure CLI",
+      "version": "azure-cli-2.70.0",
+      "available_on": "2025-03-04",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/Azure/azure-cli/releases/tag/azure-cli-2.70.0",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Azure implementation schemas",
+      "version": "AzureRM 4.27.0; Web 2023-12-01; Storage 2023-05-01; ManagedIdentity 2023-01-31",
+      "available_on": "2025-04-25",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/tree/v4.27.0/internal/services",
+      "finding": "Tagged resource documentation and implementation inspected for web app VNet/UAMI/container config, ARM storage containers, endpoints/DNS/NSG/routes, roles, policies and federated credentials. No external Terraform modules. Provider bundled SDK resource-manager v0.20250409.1192141 and plugin SDK v2.36.1; no local compilation/resolution.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "App Service private ingress and outbound VNet",
+      "version": "Basic B1 Linux; dedicated /26 Microsoft.Web/serverFarms; separate sites PE",
+      "available_on": "2025-10-06",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/2ec7b89dc220f661e7e100a69dbab0531919c41c/articles/app-service/overview-private-endpoint.md",
+      "finding": "Dated Microsoft docs establish Basic private endpoints; September 4 2025 VNet docs establish Basic integration and /26 capacity. West Europe examples supported; actual quota, SKU availability and current API acceptance pending subscription checks. Ingress PE and egress delegated subnet must differ.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "App Service identity token endpoint",
+      "version": "IDENTITY_ENDPOINT / IDENTITY_HEADER; api-version=2019-08-01",
+      "available_on": "2025-09-01",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/78b5d44c31cd14d2738675c49cd42e5e0fdd8604/articles/app-service/overview-managed-identity.md",
+      "finding": "UAMI client_id selects workload identity; storage audience https://storage.azure.com/. No key or SAS fallback. Cached group/role tokens can delay permissions.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Blob REST bearer authentication",
+      "version": "2023-11-03 service version",
+      "available_on": "2025-10-16",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/7fb491b615047e096374f453ae967856870780db/articles/storage/blobs/authorize-access-azure-active-directory.md",
+      "finding": "Dated identity authorization source plus release/provider schema. REST read/write test uses bearer identity; management Reader/Contributor is distinct from Blob Data Reader.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Python standard library and image",
+      "version": "3.12.8-slim-bookworm@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0",
+      "available_on": "2025-02-04",
+      "needed_on": "2026-01-17",
+      "source_url": "https://hub.docker.com/v2/repositories/library/python/tags/3.12.8-slim-bookworm",
+      "finding": "Public registry metadata read: index last pushed 2025-02-04, linux/amd64 child 8859bd6ca943079262c27e38b7119cdacede77c463139a15651dd340087a6cc9. CPython released 2024-12-03. Digest pins Debian and bundled transitive image contents; no pip dependencies. Old security baseline, reassess before real production use.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "GitHub hosted runner",
+      "version": "ubuntu-24.04 label; hosted image mutable",
+      "available_on": "2024-09-25",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.blog/changelog/2024-09-25-actions-new-images-and-ubuntu-latest-changes/",
+      "finding": "Dated GA announcement read. Label existed; hosted OS image is not byte-reproducible today. Install pinned tools and actions; Terraform uses native GitHub OIDC without CLI or Docker in workflows.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Terraform Azure backend",
+      "version": "Terraform 1.10.5 native Blob lease locking, Azure AD, OIDC",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/hashicorp/terraform/blob/v1.10.5/website/docs/language/backend/azurerm.mdx",
+      "finding": "Tagged backend docs read; use_azuread_auth, use_oidc, env ARM variables supported. Backend storage is provisioned with local bootstrap state first.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Terragrunt configuration syntax",
+      "version": "0.77.22 include root.hcl / generate / get_env / read_terragrunt_config",
+      "available_on": "2025-04-21",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/gruntwork-io/terragrunt/tree/v0.77.22/docs",
+      "finding": "Pinned source tree inspected. Use legacy terragrunt init/plan/apply working-directory invocation. No run-all dependency or newer stack syntax.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Terraform CLI",
+      "version": "v1.10.5",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/terraform/releases/tag/v1.10.5",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Terragrunt CLI",
+      "version": "v0.77.22",
+      "available_on": "2025-04-21",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/gruntwork-io/terragrunt/releases/tag/v0.77.22",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "AzureRM provider",
+      "version": "v4.27.0",
+      "available_on": "2025-04-25",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/releases/tag/v4.27.0",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "GitHub checkout action",
+      "version": "v4.2.2",
+      "available_on": "2024-10-23",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/actions/checkout/releases/tag/v4.2.2",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Terraform setup action",
+      "version": "v3.1.2",
+      "available_on": "2024-08-19",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/setup-terraform/releases/tag/v3.1.2",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Azure CLI",
+      "version": "azure-cli-2.70.0",
+      "available_on": "2025-03-04",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/Azure/azure-cli/releases/tag/azure-cli-2.70.0",
+      "finding": "Read primary dated release and tagged source. Exact binary/revision is pinned; bundled dependencies remain those of the release, not resolved from current branches.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Azure implementation schemas",
+      "version": "AzureRM 4.27.0; Web 2023-12-01; Storage 2023-05-01; ManagedIdentity 2023-01-31",
+      "available_on": "2025-04-25",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/tree/v4.27.0/internal/services",
+      "finding": "Tagged resource documentation and implementation inspected for web app VNet/UAMI/container config, ARM storage containers, endpoints/DNS/NSG/routes, roles, policies and federated credentials. No external Terraform modules. Provider bundled SDK resource-manager v0.20250409.1192141 and plugin SDK v2.36.1; no local compilation/resolution.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "App Service private ingress and outbound VNet",
+      "version": "Basic B1 Linux; dedicated /26 Microsoft.Web/serverFarms; separate sites PE",
+      "available_on": "2025-10-06",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/2ec7b89dc220f661e7e100a69dbab0531919c41c/articles/app-service/overview-private-endpoint.md",
+      "finding": "Dated Microsoft docs establish Basic private endpoints; September 4 2025 VNet docs establish Basic integration and /26 capacity. West Europe examples supported; actual quota, SKU availability and current API acceptance pending subscription checks. Ingress PE and egress delegated subnet must differ.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "App Service identity token endpoint",
+      "version": "IDENTITY_ENDPOINT / IDENTITY_HEADER; api-version=2019-08-01",
+      "available_on": "2025-09-01",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/78b5d44c31cd14d2738675c49cd42e5e0fdd8604/articles/app-service/overview-managed-identity.md",
+      "finding": "UAMI client_id selects workload identity; storage audience https://storage.azure.com/. No key or SAS fallback. Cached group/role tokens can delay permissions.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Blob REST bearer authentication",
+      "version": "2023-11-03 service version",
+      "available_on": "2025-10-16",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/MicrosoftDocs/azure-docs/blob/7fb491b615047e096374f453ae967856870780db/articles/storage/blobs/authorize-access-azure-active-directory.md",
+      "finding": "Dated identity authorization source plus release/provider schema. REST read/write test uses bearer identity; management Reader/Contributor is distinct from Blob Data Reader.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Python standard library and image",
+      "version": "3.12.8-slim-bookworm@sha256:2199a62885a12290dc9c5be3ca0681d367576ab7bf037da120e564723292a2f0",
+      "available_on": "2025-02-04",
+      "needed_on": "2026-02-21",
+      "source_url": "https://hub.docker.com/v2/repositories/library/python/tags/3.12.8-slim-bookworm",
+      "finding": "Public registry metadata read: index last pushed 2025-02-04, linux/amd64 child 8859bd6ca943079262c27e38b7119cdacede77c463139a15651dd340087a6cc9. CPython released 2024-12-03. Digest pins Debian and bundled transitive image contents; no pip dependencies. Old security baseline, reassess before real production use.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "GitHub hosted runner",
+      "version": "ubuntu-24.04 label; hosted image mutable",
+      "available_on": "2024-09-25",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.blog/changelog/2024-09-25-actions-new-images-and-ubuntu-latest-changes/",
+      "finding": "Dated GA announcement read. Label existed; hosted OS image is not byte-reproducible today. Install pinned tools and actions; Terraform uses native GitHub OIDC without CLI or Docker in workflows.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Terraform Azure backend",
+      "version": "Terraform 1.10.5 native Blob lease locking, Azure AD, OIDC",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/terraform/blob/v1.10.5/website/docs/language/backend/azurerm.mdx",
+      "finding": "Tagged backend docs read; use_azuread_auth, use_oidc, env ARM variables supported. Backend storage is provisioned with local bootstrap state first.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Terragrunt configuration syntax",
+      "version": "0.77.22 include root.hcl / generate / get_env / read_terragrunt_config",
+      "available_on": "2025-04-21",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/gruntwork-io/terragrunt/tree/v0.77.22/docs",
+      "finding": "Pinned source tree inspected. Use legacy terragrunt init/plan/apply working-directory invocation. No run-all dependency or newer stack syntax.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Docker Engine for manual image build",
+      "version": "27.5.1 (Buildx 0.20.0; BuildKit 0.18.2; containerd 1.7.25; runc 1.2.4)",
+      "available_on": "2025-01-22",
+      "needed_on": "2025-12-03",
+      "source_url": "https://docs.docker.com/engine/release-notes/27/#2751",
+      "finding": "Primary release notes inspected by research agent; runtime not invoked.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Docker Engine for manual image build",
+      "version": "27.5.1 (Buildx 0.20.0; BuildKit 0.18.2; containerd 1.7.25; runc 1.2.4)",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-01-17",
+      "source_url": "https://docs.docker.com/engine/release-notes/27/#2751",
+      "finding": "Primary release notes inspected by research agent; runtime not invoked.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Docker Engine for manual image build",
+      "version": "27.5.1 (Buildx 0.20.0; BuildKit 0.18.2; containerd 1.7.25; runc 1.2.4)",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-02-21",
+      "source_url": "https://docs.docker.com/engine/release-notes/27/#2751",
+      "finding": "Primary release notes inspected by research agent; runtime not invoked.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Python setup action",
+      "version": "v5.6.0 a26af69be951a213d495a4c3e4e4022e16d87065",
+      "available_on": "2025-04-24",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/actions/setup-python/releases/tag/v5.6.0",
+      "finding": "Primary cached release/commit and action.yml read; node20 bundled action source, Python 3.12.8 stdlib, no pip resolution.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Python setup action",
+      "version": "v5.6.0 a26af69be951a213d495a4c3e4e4022e16d87065",
+      "available_on": "2025-04-24",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/actions/setup-python/releases/tag/v5.6.0",
+      "finding": "Primary cached release/commit and action.yml read; node20 bundled action source, Python 3.12.8 stdlib, no pip resolution.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Python setup action",
+      "version": "v5.6.0 a26af69be951a213d495a4c3e4e4022e16d87065",
+      "available_on": "2025-04-24",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/actions/setup-python/releases/tag/v5.6.0",
+      "finding": "Primary cached release/commit and action.yml read; node20 bundled action source, Python 3.12.8 stdlib, no pip resolution.",
+      "verified": true
+    }
+  ],
+  "audit_complete": true
+}

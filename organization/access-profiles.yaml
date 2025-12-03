@@ -1,0 +1,46 @@
+{
+  "project-developer": {
+    "kind": "management",
+    "roles": [
+      "Contributor"
+    ],
+    "scope": "project-resource-group",
+    "description": "Development management access; does not grant Blob data actions. Contributor can change workloads and their identity use; dev only.",
+    "environments": [
+      "dev"
+    ]
+  },
+  "project-reader": {
+    "kind": "management",
+    "roles": [
+      "Reader"
+    ],
+    "scope": "project-resource-group",
+    "environments": [
+      "dev",
+      "prod"
+    ]
+  },
+  "platform-operator": {
+    "kind": "management",
+    "roles": [
+      "Contributor"
+    ],
+    "scope": "project-resource-group",
+    "environments": [
+      "dev",
+      "prod"
+    ]
+  },
+  "object-storage-reader": {
+    "kind": "data",
+    "roles": [
+      "Storage Blob Data Reader"
+    ],
+    "scope": "container",
+    "environments": [
+      "dev",
+      "prod"
+    ]
+  }
+}

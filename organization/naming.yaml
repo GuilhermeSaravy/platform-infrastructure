@@ -1,0 +1,12 @@
+{
+  "resource_group": "rg-%s-%s",
+  "network_resource_group": "rg-platform-network-%s",
+  "virtual_network": "vnet-%s",
+  "runtime": "app-ns-%s-%s-%s",
+  "service_plan": "asp-%s-%s",
+  "workload_identity": "id-%s-%s-%s",
+  "storage": "stns%s%s%s",
+  "integration_subnet": "snet-%s-app",
+  "private_endpoint_subnet": "snet-private-endpoints",
+  "operator_subnet": "snet-operators"
+}

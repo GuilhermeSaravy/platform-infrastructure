@@ -1,0 +1,82 @@
+{
+  "name": "orders",
+  "owner": {
+    "team": "commerce-backend"
+  },
+  "cost_center": "commerce-platform",
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "capabilities": [
+    {
+      "name": "api",
+      "type": "application-runtime",
+      "azure": {
+        "sku": "B1",
+        "port": 8080
+      }
+    },
+    {
+      "name": "exports-storage",
+      "type": "object-storage",
+      "azure": {
+        "account_tier": "Standard",
+        "replication_type": "LRS",
+        "containers": [
+          "exports",
+          "restricted"
+        ]
+      }
+    }
+  ],
+  "access": [
+    {
+      "team": "platform-engineering",
+      "profile": "platform-operator",
+      "environments": [
+        "dev",
+        "prod"
+      ]
+    },
+    {
+      "team": "commerce-backend",
+      "profile": "project-developer",
+      "environments": [
+        "dev"
+      ]
+    },
+    {
+      "team": "commerce-backend",
+      "profile": "project-reader",
+      "environments": [
+        "prod"
+      ]
+    },
+    {
+      "team": "commerce-frontend",
+      "profile": "project-reader",
+      "environments": [
+        "dev",
+        "prod"
+      ]
+    }
+  ],
+  "workload_grants": [
+    {
+      "principal": {
+        "project": "catalog",
+        "environment": "dev",
+        "identity": "api"
+      },
+      "target": {
+        "capability": "exports-storage",
+        "container": "exports"
+      },
+      "profile": "object-storage-reader"
+    }
+  ],
+  "azure": {
+    "network_slot": 1
+  }
+}

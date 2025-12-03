@@ -1,0 +1,34 @@
+{
+  "organization": "Northstar Commerce",
+  "organization_slug": "northstar",
+  "cost_center": "commerce-platform",
+  "environments": [
+    "dev",
+    "prod"
+  ],
+  "teams": {
+    "platform-engineering": {
+      "group_name": "grp-platform-engineering"
+    },
+    "commerce-backend": {
+      "group_name": "grp-commerce-backend"
+    },
+    "commerce-frontend": {
+      "group_name": "grp-commerce-frontend"
+    }
+  },
+  "azure": {
+    "location": "westeurope",
+    "allowed_locations": [
+      "westeurope"
+    ],
+    "network_cidrs": {
+      "dev": "10.40.0.0/16",
+      "prod": "10.50.0.0/16"
+    }
+  },
+  "tags": {
+    "managed_by": "terraform",
+    "organization": "northstar"
+  }
+}
