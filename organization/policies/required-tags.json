@@ -1,0 +1,23 @@
+{
+  "display_name": "Northstar resource ownership and cost tags",
+  "description": "Require organization, owner, project, environment and cost_center on resources supporting tags and location.",
+  "mode": "Indexed",
+  "parameters": {},
+  "policy_rule": {
+    "if": {
+      "anyOf": [
+        {"field": "tags[organization]", "exists": "false"},
+        {"field": "tags[owner]", "exists": "false"},
+        {"field": "tags[project]", "exists": "false"},
+        {"field": "tags[environment]", "exists": "false"},
+        {"field": "tags[cost_center]", "exists": "false"},
+        {"field": "tags[organization]", "equals": ""},
+        {"field": "tags[owner]", "equals": ""},
+        {"field": "tags[project]", "equals": ""},
+        {"field": "tags[environment]", "equals": ""},
+        {"field": "tags[cost_center]", "equals": ""}
+      ]
+    },
+    "then": {"effect": "deny"}
+  }
+}

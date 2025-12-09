@@ -1,0 +1,24 @@
+{
+  "display_name": "Northstar approved Azure locations",
+  "description": "Deny regional resources outside the approved locations; global resources are exempt.",
+  "mode": "All",
+  "parameters": {
+    "allowedLocations": {
+      "type": "Array",
+      "metadata": {
+        "displayName": "Approved Azure locations",
+        "strongType": "location"
+      }
+    }
+  },
+  "policy_rule": {
+    "if": {
+      "allOf": [
+        {"field": "location", "exists": "true"},
+        {"field": "location", "notEquals": "global"},
+        {"field": "location", "notIn": "[parameters('allowedLocations')]"}
+      ]
+    },
+    "then": {"effect": "deny"}
+  }
+}

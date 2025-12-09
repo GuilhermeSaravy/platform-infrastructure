@@ -1,0 +1,20 @@
+{
+  "display_name": "Northstar private HTTPS web apps",
+  "description": "Deny App Service sites with public networking or without HTTPS enforcement.",
+  "mode": "All",
+  "parameters": {},
+  "policy_rule": {
+    "if": {
+      "allOf": [
+        {"field": "type", "equals": "Microsoft.Web/sites"},
+        {
+          "anyOf": [
+            {"field": "Microsoft.Web/sites/publicNetworkAccess", "notEquals": "Disabled"},
+            {"field": "Microsoft.Web/sites/httpsOnly", "notEquals": true}
+          ]
+        }
+      ]
+    },
+    "then": {"effect": "deny"}
+  }
+}

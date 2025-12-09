@@ -1,0 +1,22 @@
+{
+  "display_name": "Northstar private storage and identity authentication",
+  "description": "Deny Storage accounts that allow public networking, public blobs, shared keys or unencrypted HTTP.",
+  "mode": "All",
+  "parameters": {},
+  "policy_rule": {
+    "if": {
+      "allOf": [
+        {"field": "type", "equals": "Microsoft.Storage/storageAccounts"},
+        {
+          "anyOf": [
+            {"field": "Microsoft.Storage/storageAccounts/publicNetworkAccess", "notEquals": "Disabled"},
+            {"field": "Microsoft.Storage/storageAccounts/allowSharedKeyAccess", "notEquals": false},
+            {"field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess", "notEquals": false},
+            {"field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly", "notEquals": true}
+          ]
+        }
+      ]
+    },
+    "then": {"effect": "deny"}
+  }
+}
