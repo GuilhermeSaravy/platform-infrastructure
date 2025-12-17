@@ -1,0 +1,5 @@
+# Project resources
+
+One resources state owns a project's environment resource group, workload UAMI, App Service plan/app, optional StorageV2 account/containers and Private Endpoints. It consumes shared subnet/DNS names through ARM data sources and never owns the VNet. The contract permits at most one application-runtime and one object-storage capability per project. Azure SKU/port/storage options are explicit. Public ingress, storage keys and SAS are disabled; container creation uses the Resource Manager API, avoiding a private data-plane dependency for hosted workflows.
+
+Outputs use contract_version=1, workload_identities keyed by capability name, storage_containers keyed capability/container and runtime_hostnames. Identity/container identifiers are sensitive. Consumers resolve only named ARM identities/containers instead of remote-state snapshots. Human and cross-project assignments are exclusively in the separate project-access module. Removing resources requires revoking access first.

@@ -556,6 +556,36 @@
       "source_url": "https://github.com/actions/setup-python/releases/tag/v5.6.0",
       "finding": "Primary cached release/commit and action.yml read; node20 bundled action source, Python 3.12.8 stdlib, no pip resolution.",
       "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Private storage management refresh",
+      "version": "AzureRM 4.27.0 features.storage.data_plane_available=false",
+      "available_on": "2025-04-25",
+      "needed_on": "2025-12-03",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/blob/v4.27.0/internal/provider/features.go",
+      "finding": "Tagged feature schema and storage account read source reviewed. Suppress queue/static-website data-plane refresh; containers and blob properties use ARM APIs. No executable verification performed.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Private storage management refresh",
+      "version": "AzureRM 4.27.0 features.storage.data_plane_available=false",
+      "available_on": "2025-04-25",
+      "needed_on": "2026-01-17",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/blob/v4.27.0/internal/provider/features.go",
+      "finding": "Tagged feature schema and storage account read source reviewed. Suppress queue/static-website data-plane refresh; containers and blob properties use ARM APIs. No executable verification performed.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Private storage management refresh",
+      "version": "AzureRM 4.27.0 features.storage.data_plane_available=false",
+      "available_on": "2025-04-25",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/blob/v4.27.0/internal/provider/features.go",
+      "finding": "Tagged feature schema and storage account read source reviewed. Suppress queue/static-website data-plane refresh; containers and blob properties use ARM APIs. No executable verification performed.",
+      "verified": true
     }
   ],
   "audit_complete": true
