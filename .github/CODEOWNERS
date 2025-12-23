@@ -1,0 +1,9 @@
+# Replace example handles with existing GitHub users/teams before publication.
+# Logical Entra team names do not automatically create GitHub teams.
+* @northstar/platform-engineering
+/organization/ @northstar/platform-engineering
+/platform/ @northstar/platform-engineering
+/modules/ @northstar/platform-engineering
+/.github/ @northstar/platform-engineering
+/projects/catalog/ @northstar/platform-engineering @northstar/commerce-backend
+/projects/orders/ @northstar/platform-engineering @northstar/commerce-backend

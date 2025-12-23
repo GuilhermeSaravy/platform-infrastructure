@@ -1,0 +1,51 @@
+name: Manual controlled infrastructure apply
+on:
+  workflow_dispatch:
+    inputs:
+      unit:
+        description: 'Exact state directory, e.g. platform/networking/dev'
+        required: true
+        type: string
+      confirm:
+        description: 'Type apply after reviewing the change and destination-owned access declarations'
+        required: true
+        type: string
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: platform-infrastructure
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'apply'
+    environment: platform
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TEAM_GROUP_IDS: ${{ secrets.AZURE_TEAM_GROUP_IDS }}
+      PLATFORM_UNIQUE_SUFFIX: ${{ vars.PLATFORM_UNIQUE_SUFFIX }}
+      DEMO_IMAGE: ${{ vars.DEMO_IMAGE }}
+      ARM_USE_OIDC: 'true'
+      ARM_USE_CLI: 'false'
+      ARM_USE_AZUREAD: 'true'
+      UNIT: ${{ inputs.unit }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-tools
+      - name: Check runtime configuration without displaying values
+        run: python3 scripts/runtime_config.py
+      - name: Initialize selected state
+        run: python3 scripts/infra.py init "$UNIT"
+      - name: Create a fresh plan in this approved job
+        run: python3 scripts/infra.py plan "$UNIT"
+      - name: Apply that exact saved plan
+        run: python3 scripts/infra.py apply "$UNIT" --approve
+      - name: Remove ephemeral plans
+        if: always()
+        run: rm -rf -- .runtime

@@ -1,0 +1,27 @@
+name: Install historical tools
+description: Install the audited Terraform, Terragrunt and Python versions
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      with:
+        python-version: '3.12.8'
+    - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      with:
+        terraform_version: '1.10.5'
+        terraform_wrapper: false
+    - name: Install Terragrunt with release checksum
+      shell: bash
+      run: |
+        set -euo pipefail
+        tools_dir="$(mktemp -d)"
+        trap 'rm -rf "$tools_dir"' EXIT
+        release=https://github.com/gruntwork-io/terragrunt/releases/download/v0.77.22
+        curl --fail --silent --show-error --location "$release/terragrunt_linux_amd64" -o "$tools_dir/terragrunt_linux_amd64"
+        curl --fail --silent --show-error --location "$release/SHA256SUMS" -o "$tools_dir/SHA256SUMS"
+        cd "$tools_dir"
+        checksum_line="$(awk '$2 == "terragrunt_linux_amd64" { print }' SHA256SUMS)"
+        test -n "$checksum_line"
+        printf '%s\n' "$checksum_line" | sha256sum --check --status
+        install -m 0755 terragrunt_linux_amd64 "$RUNNER_TEMP/terragrunt"
+        printf '%s\n' "$RUNNER_TEMP" >> "$GITHUB_PATH"

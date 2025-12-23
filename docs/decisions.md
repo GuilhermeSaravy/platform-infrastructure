@@ -1,0 +1,11 @@
+# Decisions
+
+1. **Azure only, explicit services.** Logical ownership/profiles are reusable ideas; provider resources, service options and naming remain Azure-specific. One runtime and one storage capability per project keeps the current scope clear.
+2. **Shared environment network with independent workload states.** Resource groups isolate lifecycle; NSGs, Private Endpoints/public-access settings and container RBAC establish intended connectivity and access. Subnet separation alone is insufficient.
+3. **External groups, workload identities local to workloads.** Logical teams resolve at execution; no azuread provider, group creation, membership or committed IDs. Dev Contributor is trusted management authority, prod Reader reduces changes.
+4. **Destination-owned separate access.** The destination owns its container grant. Named UAMI and ARM container contracts avoid exposing source state and avoid a create/grant cycle. Resource creation and grants can be applied independently for acceptance.
+5. **Local bootstrap before OIDC.** An existing operator creates backend and trust. Backend and identity cannot self-create without authentication. Retained local state or deliberate post-bootstrap migration is supported.
+6. **Hosted-runner state exception.** State endpoint remains public with Azure AD, no shared-key auth, versioning and restricted container roles. Workload services are private. An organization forbidding that endpoint must adapt runner/backend connectivity deliberately.
+7. **ARM storage operations.** AzureRM4.27 ARM containers plus storage.data_plane_available=false avoid requiring hosted-runner private service access. Provider ListKeys may still store disabled keys in confidential resource state; no workload consumes them. Access states avoid storage-account datasource snapshots.
+8. **Manual controls.** Every workflow uses workflow_dispatch. Main branch checks, protected environment, source review and local private plan review govern apply. No tests or deployment are claimed from source review. No secrets/plans/state are ordinary artifacts.
+9. **Evolution.** The December baseline includes a reusable template and manual deployment/acceptance. Later improvements add a configuration-only onboarding generator and dispatch-only drift/governance/access review. They do not introduce multi-cloud or automatic remediation.

@@ -1,5 +1,11 @@
-# Verification status
+# Implementation and verification status
 
-Implementation is being delivered in sequential milestones recorded in the external portfolio registry. The historical evidence and planned evolution are in historical-audit.json.
+The December2025 baseline delivers populated fictional declarations/template, local authenticated bootstrap and OIDC trust, pinned provider/backend configuration, dev/prod shared networking, scoped governance, private project resources, sensitive team resolution, separate destination grants, a fixed-target Managed Identity demo, dispatch-only workflows, runtime preflight, authored tests and manual startup/cleanup procedures.
 
-Only source reading is used for review during generation. All executable configuration checks, tests, formatting, linting, validation, Terraform/Terragrunt initialization and plans, builds, application execution, workflows, authentication and deployment are pending manual execution. No tenant or subscription is assumed. Local Git metadata and registry operations do not establish runtime correctness.
+All executable verification remains **pending manual execution**: configuration checks, tests, formatting, linting, validation, initialization, Terraform/Terragrunt plans, application/image builds, application execution, workflows, authentication and cloud deployment. Review during generation consists only of source reading and historical documentation research. No Azure/GitHub accounts or secrets have been created or queried and no code pushed or published.
+
+Local Git commits use reconstructed reserved dates with both author and committer timestamps. Actual recording times and hashes are in the external shared registry. Historical dates do not prove contemporaneous work. The registry helper checks permitted Git metadata when recording hashes; its standalone validate command is not run because executable validation is prohibited by the task boundary.
+
+Later onboarding and drift/access review improvements are reserved for January17 and February21, 2026 and will be implemented after this baseline milestone using the same audited tool versions. Reassess old runtime/tools and current Azure availability before real deployment. Source review is not deployment evidence. Required external preparation is listed in startup.md and external-configuration.md.
+
+Backlog after the scheduled improvements: automated onboarding pull requests through an explicitly authorized identity, continuous drift/access review after successful manual acceptance, stronger production deployment-role scoping/conditions, private state/runner adaptation if required by organization policy, and a separately audited current-version/security upgrade. No AWS implementation is planned here.

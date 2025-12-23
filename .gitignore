@@ -18,3 +18,5 @@ identity-mapping.local.json
 __pycache__/
 *.pyc
 .DS_Store
+**/backend.generated.tf
+**/provider.generated.tf

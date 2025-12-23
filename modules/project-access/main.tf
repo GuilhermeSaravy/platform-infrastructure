@@ -40,15 +40,10 @@ data "azurerm_user_assigned_identity" "source" {
   name                = format(local.naming.workload_identity, each.value.principal.project, each.value.principal.environment, each.value.principal.identity)
   resource_group_name = format(local.naming.resource_group, each.value.principal.project, each.value.principal.environment)
 }
-data "azurerm_storage_account" "destination" {
-  for_each            = length(local.workload_grants) > 0 ? local.storage_capabilities : {}
-  name                = format(local.naming.storage, var.project_name, var.environment, var.unique_suffix)
-  resource_group_name = data.azurerm_resource_group.project.name
-}
 data "azurerm_storage_container" "destination" {
   for_each           = local.workload_grants
   name               = each.value.target.container
-  storage_account_id = data.azurerm_storage_account.destination[each.value.target.capability].id
+  storage_account_id = "${data.azurerm_resource_group.project.id}/providers/Microsoft.Storage/storageAccounts/${format(local.naming.storage, var.project_name, var.environment, var.unique_suffix)}"
 }
 resource "azurerm_role_assignment" "workload" {
   for_each                         = local.workload_grants
