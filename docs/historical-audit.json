@@ -52,6 +52,34 @@
       "date": "2025-12-23",
       "deliverable": "Dispatch-only workflows, input checks, full manual startup, test scripts and cleanup runbooks",
       "acceptance": "Read secret wiring/log suppression and consistency of commands; all executable verification pending."
+    },
+    {
+      "id": "readme-overview",
+      "date": "2025-12-24",
+      "deliverable": "Explain project purpose, value, example and repository structure on a documentation branch.",
+      "acceptance": "Read the README against the December operations baseline; avoid links to January/February-only features. No executable checks.",
+      "dependencies": [
+        "platform-infrastructure/operations"
+      ]
+    },
+    {
+      "id": "output-hardening",
+      "date": "2025-12-29",
+      "deliverable": "Source-review hardening of shared resource outputs containing subscription identifiers",
+      "acceptance": "Read output contracts to confirm identity-bearing ARM IDs are sensitive; executable checks remain pending.",
+      "dependencies": [
+        "platform-infrastructure/operations"
+      ]
+    },
+    {
+      "id": "readme-merge",
+      "date": "2025-12-30",
+      "deliverable": "Merge the project overview branch after output hardening; retain the later onboarding and drift-review improvements.",
+      "acceptance": "Inspect Git parents/dates and README changes; preserve the requested final README through later documentation updates. No tests/workflows/infra commands.",
+      "dependencies": [
+        "platform-infrastructure/readme-overview",
+        "platform-infrastructure/output-hardening"
+      ]
     }
   ],
   "improvements": [

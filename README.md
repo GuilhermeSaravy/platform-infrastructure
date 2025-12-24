@@ -1,17 +1,43 @@
 # Platform Infrastructure
 
-An Azure foundation for the fictional **Northstar Commerce** organization. Catalog and orders declare ownership, dev/prod environments, capabilities and access intent. The platform translates those declarations into private runtimes, storage, governance and shared environment networks.
+Platform Infrastructure provides a shared starting point for setting up projects on **Microsoft Azure**. Teams describe a project's owner, environments, services and access needs in configuration files. The platform turns those declarations into Azure resources using **Terraform**, organizes their configuration with **Terragrunt**, and provides manually triggered **GitHub Actions** workflows.
 
-**Start with [the manual startup guide](docs/startup.md).** This repository contains code and authored acceptance procedures. Executable verification and cloud deployment are pending manual execution. No Azure identifiers or credentials are populated.
+As more projects are added, setting up networking, permissions and security rules separately creates repeated work and inconsistent settings. This project puts those common rules in one place. A new project can reuse them by adding its own configuration, without changing shared modules or a central project list.
+
+The included example represents **Northstar Commerce**, a fictional company with `catalog` and `orders` projects in `dev` and `prod`. It defines:
+
+- A shared network for each environment, with separate resource groups for each project. Dev and prod are not connected by default.
+- Private applications on Azure App Service and private Azure Blob storage.
+- Common naming, ownership and cost tags, allowed regions, and security policies.
+- Permissions for existing team groups and Managed Identity access for applications, without storage keys or client secrets.
+- Local setup for state storage and GitHub OIDC authentication, followed by manual plan and apply workflows.
+
+One example connects these pieces: the catalog dev application receives read-only access to the orders dev `exports` container. Orders owns the grant; writing files and reading its `restricted` container remain outside that grant. Separate resource and access states make it possible to test access before and after applying the permission.
+
+The repository separates project needs from the code that implements them:
+
+```text
+platform-infrastructure/
+├── organization/       # Shared defaults, naming, access profiles and policies
+├── platform/           # Initial setup, identity mapping, governance and networks
+├── modules/            # Reusable Terraform code for Azure resources
+├── projects/           # Catalog and orders declarations, split by environment
+├── templates/          # Complete starting point for another project
+├── demo/               # Small application demonstrating Managed Identity access
+├── scripts/            # Configuration checks and manual operations
+├── tests/              # Authored offline tests and live acceptance procedures
+├── docs/               # Architecture, setup, operation and cleanup guides
+└── .github/workflows/  # Manually triggered checks, image build, plan and apply
+```
+
+**Start with the [manual startup guide](docs/startup.md).** It explains the Azure prerequisites, local authentication, initial setup, GitHub secrets, dev deployment and cleanup. Existing Entra groups are supplied externally; this repository does not create groups or manage their members. No real Azure identifiers or credentials are committed.
+
+For more detail:
 
 - [Architecture and ownership](docs/architecture.md)
 - [External configuration and the four GitHub secrets](docs/external-configuration.md)
-- [Manual startup and dev demonstration](docs/startup.md)
-- [Acceptance procedures](docs/acceptance.md)
-- [Historical selection and source ledger](docs/historical-audit.json)
-- [Reusable onboarding template](templates/README.md)
-- [Implementation status](docs/status.md)
+- [Reusable project template](templates/README.md)
+- [Acceptance tests](docs/acceptance.md)
+- [Implementation status](docs/status.md) and [historical sources](docs/historical-audit.json)
 
-Quick start after preparing a subscription, groups and local tools: authenticate interactively, supply external environment variables, bootstrap from `platform/bootstrap` using retained local state, publish the demo image, then initialize/plan/apply dev network and project resource units. Apply governance, run the denied-before-grant acceptance sequence, apply `projects/orders/environments/dev/access`, and run after-grant tests. Exact commands and cleanup are in the startup guide. Nothing runs automatically on push or pull request.
-
-The initial development calendar is reconstructed in December 2025; later onboarding and review improvements are reserved for January and February 2026. Historical dates do not prove contemporaneous work. Exact local Git hashes and actual recording times are maintained in the shared registry outside this repository.
+The code and procedures have been reviewed by reading. Executable checks, builds and cloud deployment remain pending manual execution. Nothing runs automatically on push or pull request. Commit dates follow a reconstructed portfolio timeline; they do not prove work occurred on those dates.
