@@ -8,10 +8,12 @@ output "resource_group_name" {
 }
 
 output "resource_group_id" {
+  sensitive = true
   value = azurerm_resource_group.network.id
 }
 
 output "virtual_network_id" {
+  sensitive = true
   value = azurerm_virtual_network.shared.id
 }
 
@@ -24,6 +26,7 @@ output "address_space" {
 }
 
 output "integration_subnet_ids" {
+  sensitive = true
   value = { for name, subnet in azurerm_subnet.integration : name => subnet.id }
   depends_on = [
     azurerm_subnet_network_security_group_association.integration,
@@ -36,6 +39,7 @@ output "integration_subnet_cidrs" {
 }
 
 output "private_endpoint_subnet_id" {
+  sensitive = true
   value      = azurerm_subnet.private_endpoints.id
   depends_on = [azurerm_subnet_network_security_group_association.private_endpoints]
 }
@@ -45,6 +49,7 @@ output "private_endpoint_subnet_cidr" {
 }
 
 output "operator_subnet_id" {
+  sensitive = true
   value      = azurerm_subnet.operators.id
   depends_on = [azurerm_subnet_network_security_group_association.operators]
 }
@@ -54,10 +59,12 @@ output "operator_subnet_cidr" {
 }
 
 output "private_dns_zone_ids" {
+  sensitive = true
   value      = { for name, zone in azurerm_private_dns_zone.services : name => zone.id }
   depends_on = [azurerm_private_dns_zone_virtual_network_link.services]
 }
 
 output "route_table_id" {
+  sensitive = true
   value = azurerm_route_table.integration.id
 }

@@ -52,6 +52,15 @@
       "date": "2025-12-23",
       "deliverable": "Dispatch-only workflows, input checks, full manual startup, test scripts and cleanup runbooks",
       "acceptance": "Read secret wiring/log suppression and consistency of commands; all executable verification pending."
+    },
+    {
+      "id": "output-hardening",
+      "date": "2025-12-29",
+      "deliverable": "Source-review hardening of shared resource outputs containing subscription identifiers",
+      "acceptance": "Read output contracts to confirm identity-bearing ARM IDs are sensitive; executable checks remain pending.",
+      "dependencies": [
+        "platform-infrastructure/operations"
+      ]
     }
   ],
   "improvements": [
