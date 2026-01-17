@@ -1,4 +1,5 @@
 locals {
+  naming   = yamldecode(file("${var.repository_root}/organization/naming.yaml"))
   defaults = yamldecode(file("${var.repository_root}/organization/defaults.yaml"))
   declarations = [
     for path in fileset(var.repository_root, "projects/*/project.yaml") :
@@ -26,7 +27,7 @@ locals {
 }
 
 resource "azurerm_resource_group" "network" {
-  name     = "rg-platform-network-${var.environment}"
+  name     = format(local.naming.network_resource_group, var.environment)
   location = var.location
   tags     = local.tags
 
@@ -47,7 +48,7 @@ resource "azurerm_resource_group" "network" {
 }
 
 resource "azurerm_virtual_network" "shared" {
-  name                = "vnet-${var.environment}"
+  name                = format(local.naming.virtual_network, var.environment)
   location            = azurerm_resource_group.network.location
   resource_group_name = azurerm_resource_group.network.name
   address_space       = [local.network_cidr]
@@ -56,7 +57,7 @@ resource "azurerm_virtual_network" "shared" {
 
 resource "azurerm_subnet" "integration" {
   for_each             = local.projects
-  name                 = "snet-${each.key}-app"
+  name                 = format(local.naming.integration_subnet, each.key)
   resource_group_name  = azurerm_resource_group.network.name
   virtual_network_name = azurerm_virtual_network.shared.name
   address_prefixes     = [local.integration_cidrs[each.key]]
@@ -71,7 +72,7 @@ resource "azurerm_subnet" "integration" {
 }
 
 resource "azurerm_subnet" "private_endpoints" {
-  name                              = "snet-private-endpoints"
+  name                              = local.naming.private_endpoint_subnet
   resource_group_name               = azurerm_resource_group.network.name
   virtual_network_name              = azurerm_virtual_network.shared.name
   address_prefixes                  = [local.private_endpoint_cidr]
@@ -79,7 +80,7 @@ resource "azurerm_subnet" "private_endpoints" {
 }
 
 resource "azurerm_subnet" "operators" {
-  name                 = "snet-operators"
+  name                 = local.naming.operator_subnet
   resource_group_name  = azurerm_resource_group.network.name
   virtual_network_name = azurerm_virtual_network.shared.name
   address_prefixes     = [local.operator_cidr]

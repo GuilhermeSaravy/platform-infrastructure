@@ -9,7 +9,7 @@ An Azure foundation for the fictional **Northstar Commerce** organization. Catal
 - [Manual startup and dev demonstration](docs/startup.md)
 - [Acceptance procedures](docs/acceptance.md)
 - [Historical selection and source ledger](docs/historical-audit.json)
-- [Reusable onboarding template](templates/README.md)
+- [Reusable onboarding template](templates/README.md) and [offline generator](docs/onboarding.md)
 - [Implementation status](docs/status.md)
 
 Quick start after preparing a subscription, groups and local tools: authenticate interactively, supply external environment variables, bootstrap from `platform/bootstrap` using retained local state, publish the demo image, then initialize/plan/apply dev network and project resource units. Apply governance, run the denied-before-grant acceptance sequence, apply `projects/orders/environments/dev/access`, and run after-grant tests. Exact commands and cleanup are in the startup guide. Nothing runs automatically on push or pull request.

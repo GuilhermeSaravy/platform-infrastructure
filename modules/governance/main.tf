@@ -1,4 +1,5 @@
 locals {
+  naming   = yamldecode(file("${var.repository_root}/organization/naming.yaml"))
   defaults = yamldecode(file("${var.repository_root}/organization/defaults.yaml"))
   declarations = [
     for path in fileset(var.repository_root, "projects/*/project.yaml") :
@@ -13,8 +14,8 @@ locals {
     trimsuffix(path, ".json") => jsondecode(file("${var.repository_root}/organization/policies/${path}"))
   }
   resource_groups = toset(concat(
-    ["rg-platform-network-${var.environment}"],
-    [for name in keys(local.projects) : "rg-${name}-${var.environment}"]
+    [format(local.naming.network_resource_group, var.environment)],
+    [for name in keys(local.projects) : format(local.naming.resource_group, name, var.environment)]
   ))
   assignments = {
     for pair in setproduct(local.resource_groups, keys(local.policy_documents)) :
