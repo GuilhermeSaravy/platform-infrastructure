@@ -24,7 +24,7 @@ platform-infrastructure/
 ├── projects/           # Catalog and orders declarations, split by environment
 ├── templates/          # Complete starting point for another project
 ├── demo/               # Small application demonstrating Managed Identity access
-├── scripts/            # Configuration checks and manual operations
+├── scripts/            # Configuration checks, onboarding and manual operations
 ├── tests/              # Authored offline tests and live acceptance procedures
 ├── docs/               # Architecture, setup, operation and cleanup guides
 └── .github/workflows/  # Manually triggered checks, image build, plan and apply
@@ -36,8 +36,8 @@ For more detail:
 
 - [Architecture and ownership](docs/architecture.md)
 - [External configuration and the four GitHub secrets](docs/external-configuration.md)
-- [Reusable project template](templates/README.md)
+- [Adding a project](docs/onboarding.md) and the [reusable template](templates/README.md)
 - [Acceptance tests](docs/acceptance.md)
-- [Implementation status](docs/status.md) and [historical sources](docs/historical-audit.json)
+- [Implementation status](docs/status.md), [historical sources](docs/historical-audit.json) and [chronology](docs/evolution.md)
 
 The code and procedures have been reviewed by reading. Executable checks, builds and cloud deployment remain pending manual execution. Nothing runs automatically on push or pull request. Commit dates follow a reconstructed portfolio timeline; they do not prove work occurred on those dates.
