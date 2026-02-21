@@ -51,17 +51,23 @@ def resolve_environment(root=ROOT, source=None, workflow=None, require_image=Fal
     if workflow and not (source.get("ACTIONS_ID_TOKEN_REQUEST_URL") and source.get("ACTIONS_ID_TOKEN_REQUEST_TOKEN")):
         raise ConfigurationError("GitHub OIDC variables are unavailable; grant this job id-token: write and configure the matching federated credential.")
     resolved = dict(source)
+    for name in list(resolved):
+        if name.startswith(("TF_VAR_", "TG_", "TERRAGRUNT_", "TF_CLI_ARGS", "TF_LOG")) or name == "TF_DATA_DIR":
+            resolved.pop(name)
     resolved.update({
         "ARM_TENANT_ID": source["AZURE_TENANT_ID"],
         "ARM_SUBSCRIPTION_ID": source["AZURE_SUBSCRIPTION_ID"],
         "ARM_USE_AZUREAD": "true",
         "ARM_USE_OIDC": "true" if workflow else "false",
         "ARM_USE_CLI": "false" if workflow else "true",
+        "ARM_USE_MSI": "false",
+        "ARM_USE_AKS_WORKLOAD_IDENTITY": "false",
         "TF_VAR_team_group_ids": json.dumps(mapping, separators=(",", ":")),
         "TF_VAR_repository_root": str(Path(root).resolve()),
         "TF_VAR_unique_suffix": suffix,
         "TF_IN_AUTOMATION": "true" if workflow else "false",
         "TF_INPUT": "false",
+        "TF_WORKSPACE": "default",
     })
     if client:
         resolved["ARM_CLIENT_ID"] = client
@@ -70,7 +76,7 @@ def resolve_environment(root=ROOT, source=None, workflow=None, require_image=Fal
     if image:
         resolved["TF_VAR_demo_image"] = image
     # A stale credential must not silently override the chosen CLI/OIDC authentication path.
-    for name in ("ARM_CLIENT_SECRET", "ARM_CLIENT_CERTIFICATE_PATH", "ARM_CLIENT_CERTIFICATE_PASSWORD", "ARM_ACCESS_KEY", "ARM_SAS_TOKEN", "TF_LOG", "TF_LOG_PATH", "TERRAGRUNT_DEBUG"):
+    for name in ("ARM_CLIENT_SECRET", "ARM_CLIENT_CERTIFICATE_PATH", "ARM_CLIENT_CERTIFICATE_PASSWORD", "ARM_ACCESS_KEY", "ARM_SAS_TOKEN", "ARM_OIDC_TOKEN", "ARM_OIDC_TOKEN_FILE_PATH", "ARM_OIDC_REQUEST_URL", "ARM_OIDC_REQUEST_TOKEN"):
         resolved.pop(name, None)
     return resolved
 

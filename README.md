@@ -10,8 +10,9 @@ An Azure foundation for the fictional **Northstar Commerce** organization. Catal
 - [Acceptance procedures](docs/acceptance.md)
 - [Historical selection and source ledger](docs/historical-audit.json)
 - [Reusable onboarding template](templates/README.md) and [offline generator](docs/onboarding.md)
-- [Implementation status](docs/status.md)
+- [Manual drift, governance and access review](docs/review.md)
+- [Implementation status](docs/status.md) and [chronology](docs/evolution.md)
 
 Quick start after preparing a subscription, groups and local tools: authenticate interactively, supply external environment variables, bootstrap from `platform/bootstrap` using retained local state, publish the demo image, then initialize/plan/apply dev network and project resource units. Apply governance, run the denied-before-grant acceptance sequence, apply `projects/orders/environments/dev/access`, and run after-grant tests. Exact commands and cleanup are in the startup guide. Nothing runs automatically on push or pull request.
 
-The initial development calendar is reconstructed in December 2025; later onboarding and review improvements are reserved for January and February 2026. Historical dates do not prove contemporaneous work. Exact local Git hashes and actual recording times are maintained in the shared registry outside this repository.
+The initial development calendar is reconstructed in December 2025; later onboarding and review improvements use January and February 2026 slots. Historical dates do not prove contemporaneous work. Exact local Git hashes and actual recording times are maintained in the shared registry outside this repository.

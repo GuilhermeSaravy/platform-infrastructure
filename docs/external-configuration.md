@@ -4,10 +4,10 @@ Fictional names, teams, access declarations and tags are tracked. Real Azure dep
 
 | Value | GitHub source | Consumer | Local equivalent |
 | --- | --- | --- | --- |
-| AZURE_TENANT_ID | Secret with this exact name | runtime_config → ARM_TENANT_ID → provider and backend native OIDC | Environment; same name, local Azure CLI login |
-| AZURE_SUBSCRIPTION_ID | Secret with this exact name | runtime_config → ARM_SUBSCRIPTION_ID → provider and backend | Environment; same name, selected subscription |
-| AZURE_CLIENT_ID | Secret with this exact name | runtime_config → ARM_CLIENT_ID → deployment UAMI OIDC | Optional with interactive user login; required for workflow |
-| AZURE_TEAM_GROUP_IDS | Secret with this exact name | root.hcl and runtime_config → project-access → platform/identity-mapping | Environment JSON object; existing Entra groups |
+| AZURE_TENANT_ID | Secret with this exact name | plan.yml/apply.yml/review.yml → runtime_config → ARM_TENANT_ID → provider/backend native OIDC | Environment; same name, local Azure CLI login |
+| AZURE_SUBSCRIPTION_ID | Secret with this exact name | plan.yml/apply.yml/review.yml → runtime_config → ARM_SUBSCRIPTION_ID → provider/backend | Environment; same name, selected subscription |
+| AZURE_CLIENT_ID | Secret with this exact name | plan.yml/apply.yml/review.yml → runtime_config → ARM_CLIENT_ID → deployment UAMI OIDC | Optional with interactive user login; required for workflow |
+| AZURE_TEAM_GROUP_IDS | Secret with this exact name | plan.yml/apply.yml/review.yml → root.hcl/runtime_config → project-access → platform/identity-mapping | Environment JSON object; existing Entra groups |
 | PLATFORM_UNIQUE_SUFFIX | Actions variable | root.hcl, bootstrap and Azure global names | Environment; choose once, keep stable |
 | DEMO_IMAGE | Actions variable | project-resources container image | Environment; public GHCR digest reference |
 | TF_VAR_github_repository | Local environment during bootstrap | Federated credential subject repo:owner/repository:environment:platform | Real owner/repository, not a URL |
@@ -37,3 +37,5 @@ Workflow authentication uses Terraform's native GitHub OIDC support (`id-token: 
 AzureRM 4.27.0 performs ARM ListKeys reads for storage account resources when the deployment principal can read keys, even with shared-key authorization disabled. Computed disabled keys/connection strings may therefore exist in confidential resource state; no project uses them. The access module derives the destination account ARM path and reads only its container, avoiding another storage-account data-source key snapshot. Never export state or plans into logs/artifacts.
 
 Shared-network and governance outputs containing Azure resource IDs are also marked sensitive because ARM paths contain the injected subscription ID. Only nonidentity contract metadata, names and address ranges remain ordinary outputs. Sensitive marking suppresses normal CLI output; it is not encryption or state access control.
+
+Normal-unit runtime resolution also discards stale TF_VAR overrides, injected Terraform/Terragrunt flags and alternate token settings, and forces the default workspace. Unit leaf files remain the authority for project and environment; use a different state directory rather than a different Terraform workspace. Bootstrap remains a separate direct local root.

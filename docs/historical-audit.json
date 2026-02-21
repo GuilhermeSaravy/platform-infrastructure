@@ -203,7 +203,7 @@
       "available_on": "2024-09-25",
       "needed_on": "2025-12-03",
       "source_url": "https://github.blog/changelog/2024-09-25-actions-new-images-and-ubuntu-latest-changes/",
-      "finding": "Dated GA announcement read. Label existed; hosted OS image is not byte-reproducible today. Install pinned tools and actions; Terraform uses native GitHub OIDC without CLI or Docker in workflows.",
+      "finding": "Dated GA announcement read. Label existed, but the hosted OS image is not byte-reproducible today. Infrastructure workflows install pinned tools/actions and use native Terraform OIDC without Azure CLI/Docker. The separate sample-image workflow uses hosted Docker; its changing daemon is a documented reproducibility limit. Local historical engine selection is27.5.1.",
       "verified": true
     },
     {
@@ -343,7 +343,7 @@
       "available_on": "2024-09-25",
       "needed_on": "2026-01-17",
       "source_url": "https://github.blog/changelog/2024-09-25-actions-new-images-and-ubuntu-latest-changes/",
-      "finding": "Dated GA announcement read. Label existed; hosted OS image is not byte-reproducible today. Install pinned tools and actions; Terraform uses native GitHub OIDC without CLI or Docker in workflows.",
+      "finding": "Dated GA announcement read. Label existed, but the hosted OS image is not byte-reproducible today. Infrastructure workflows install pinned tools/actions and use native Terraform OIDC without Azure CLI/Docker. The separate sample-image workflow uses hosted Docker; its changing daemon is a documented reproducibility limit. Local historical engine selection is27.5.1.",
       "verified": true
     },
     {
@@ -483,7 +483,7 @@
       "available_on": "2024-09-25",
       "needed_on": "2026-02-21",
       "source_url": "https://github.blog/changelog/2024-09-25-actions-new-images-and-ubuntu-latest-changes/",
-      "finding": "Dated GA announcement read. Label existed; hosted OS image is not byte-reproducible today. Install pinned tools and actions; Terraform uses native GitHub OIDC without CLI or Docker in workflows.",
+      "finding": "Dated GA announcement read. Label existed, but the hosted OS image is not byte-reproducible today. Infrastructure workflows install pinned tools/actions and use native Terraform OIDC without Azure CLI/Docker. The separate sample-image workflow uses hosted Docker; its changing daemon is a documented reproducibility limit. Local historical engine selection is27.5.1.",
       "verified": true
     },
     {
@@ -594,6 +594,46 @@
       "needed_on": "2026-02-21",
       "source_url": "https://github.com/hashicorp/terraform-provider-azurerm/blob/v4.27.0/internal/provider/features.go",
       "finding": "Tagged feature schema and storage account read source reviewed. Suppress queue/static-website data-plane refresh; containers and blob properties use ARM APIs. No executable verification performed.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Speculative drift plan status contract",
+      "version": "Terraform1.10.5 plan -detailed-exitcode -no-color, no -out",
+      "available_on": "2025-01-22",
+      "needed_on": "2026-02-21",
+      "source_url": "https://github.com/hashicorp/terraform/blob/v1.10.5/website/docs/cli/commands/plan.mdx",
+      "finding": "Read tagged option docs: exit0 empty diff,1 error,2 nonempty diff. No saved plan, no JSON plaintext, no auto remediation. Terragrunt forwards Terraform flags in audited0.77.22.",
+      "verified": true
+    },
+    {
+      "phase": "initial",
+      "component": "Blob service REST header version",
+      "version": "x-ms-version 2023-11-03",
+      "available_on": "2024-04-16",
+      "needed_on": "2025-12-03",
+      "source_url": "https://learn.microsoft.com/en-us/rest/api/storageservices/version-2023-11-03",
+      "finding": "Primary dated version-specific Microsoft page read (last updated2024-04-16), establishes Get Blob support before the baseline. Current account/API behavior awaits manual acceptance.",
+      "verified": true
+    },
+    {
+      "phase": "automated-onboarding",
+      "component": "Blob service REST header version",
+      "version": "x-ms-version 2023-11-03",
+      "available_on": "2024-04-16",
+      "needed_on": "2026-01-17",
+      "source_url": "https://learn.microsoft.com/en-us/rest/api/storageservices/version-2023-11-03",
+      "finding": "Primary dated version-specific Microsoft page read (last updated2024-04-16), establishes Get Blob support before the baseline. Current account/API behavior awaits manual acceptance.",
+      "verified": true
+    },
+    {
+      "phase": "drift-access-review",
+      "component": "Blob service REST header version",
+      "version": "x-ms-version 2023-11-03",
+      "available_on": "2024-04-16",
+      "needed_on": "2026-02-21",
+      "source_url": "https://learn.microsoft.com/en-us/rest/api/storageservices/version-2023-11-03",
+      "finding": "Primary dated version-specific Microsoft page read (last updated2024-04-16), establishes Get Blob support before the baseline. Current account/API behavior awaits manual acceptance.",
       "verified": true
     }
   ],

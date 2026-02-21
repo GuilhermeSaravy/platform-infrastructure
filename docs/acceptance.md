@@ -19,7 +19,7 @@ export ORDERS_STORAGE_ACCOUNT="stnsordersdev${PLATFORM_UNIQUE_SUFFIX}"
 az group show --name rg-catalog-dev --query '{name:name,tags:tags}' --output json
 az group show --name rg-orders-dev --query '{name:name,tags:tags}' --output json
 az network vnet show --resource-group rg-platform-network-dev --name vnet-dev \
-  --query '{name:name,addressSpace:addressSpace.addressPrefixes,subnets:subnets[].{name:name,prefix:addressPrefix,delegations:delegations[].serviceName}}' --output json
+  --query '{name:name,addressSpace:addressSpace.addressPrefixes,subnets:subnets[].{name:name,prefix:addressPrefix,prefixes:addressPrefixes,delegations:delegations[].serviceName}}' --output json
 az network vnet peering list --resource-group rg-platform-network-dev --vnet-name vnet-dev \
   --query '[].name' --output json
 az storage account show --name "$ORDERS_STORAGE_ACCOUNT" --resource-group rg-orders-dev \
@@ -81,7 +81,7 @@ python3 tests/acceptance.py before --catalog-url "$CATALOG_URL" \
   --storage-account "$ORDERS_STORAGE_ACCOUNT"
 ```
 
-Expected: both application and Blob DNS resolve exclusively inside `10.40.0.0/16`, HTTPS health succeeds, and catalog's read probe obtains Blob 403. This proves observed denial only when fixtures and network preconditions succeeded. A 404, outer HTTP 503, timeout, public DNS result or redirect is failure. The read identity is the app UAMI, independent of the operator's fixture-upload role.
+Expected: both application and Blob DNS resolve exclusively inside the configured dev network (default `10.40.0.0/16`), HTTPS health succeeds, and catalog's read probe obtains Blob 403. This proves observed denial only when fixtures and network preconditions succeeded. A 404, outer HTTP 503, timeout, public DNS result or redirect is failure. The read identity is the app UAMI, independent of the operator's fixture-upload role.
 
 ## Apply the read-only destination grant
 
@@ -114,12 +114,14 @@ After governance assignment propagation, try a temporary storage account in proh
 
 ```sh
 POLICY_TEST_STORAGE="stnspolicy${PLATFORM_UNIQUE_SUFFIX}"
+POLICY_TEST_CREATED=false
 if az storage account create --name "$POLICY_TEST_STORAGE" --resource-group rg-orders-dev \
   --location northeurope --sku Standard_LRS --kind StorageV2 \
   --allow-shared-key-access false --allow-blob-public-access false --public-network-access Disabled \
   --min-tls-version TLS1_2 --https-only true \
   --tags organization=northstar owner=commerce-backend project=orders environment=dev cost_center=commerce-platform \
   --only-show-errors --output none >.runtime/policy-probe.log 2>&1; then
+  POLICY_TEST_CREATED=true
   printf '%s\n' 'FAIL: prohibited resource was allowed; clean up immediately.'
 elif grep -q 'RequestDisallowedByPolicy' .runtime/policy-probe.log && \
   grep -Eq 'northstar-dev-allowed-locations|northstar-allowed-locations' .runtime/policy-probe.log; then
@@ -132,10 +134,18 @@ fi
 Expected: the storage create exits nonzero with `RequestDisallowedByPolicy` naming the allowed-region policy. Inspect the protected service error locally if necessary; do not paste it into CI logs or commit it. A syntax, name collision, subscription, permission or quota error does **not** prove policy rejection. If the resource is unexpectedly allowed, mark acceptance failed, inspect policy scope/exemptions/propagation, and delete only that temporary account immediately. If it was denied, there is no account to delete. Never delete `rg-orders-dev` for this negative test:
 
 ```sh
-az storage account delete --name "$POLICY_TEST_STORAGE" --resource-group rg-orders-dev \
-  --yes --only-show-errors --output none >.runtime/policy-cleanup.log 2>&1
-rm -f .runtime/policy-probe.log .runtime/policy-cleanup.log
-unset POLICY_TEST_STORAGE
+if [ "$POLICY_TEST_CREATED" = true ]; then
+  if az storage account delete --name "$POLICY_TEST_STORAGE" --resource-group rg-orders-dev \
+    --yes --only-show-errors --output none >.runtime/policy-cleanup.log 2>&1; then
+    rm -f .runtime/policy-probe.log .runtime/policy-cleanup.log
+    unset POLICY_TEST_STORAGE POLICY_TEST_CREATED
+  else
+    printf '%s\n' 'Cleanup failed; retain the private diagnostics and remove only the temporary policy-test account.' >&2
+  fi
+else
+  rm -f .runtime/policy-probe.log
+  unset POLICY_TEST_STORAGE POLICY_TEST_CREATED
+fi
 ```
 
 ## Fixture cleanup and results
