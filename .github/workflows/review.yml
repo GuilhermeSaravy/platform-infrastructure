@@ -1,0 +1,56 @@
+name: Manual drift governance and access review
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Already deployed environment to review'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+      unit:
+        description: 'Optional exact state directory within that environment; blank reviews all'
+        required: false
+        type: string
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: platform-infrastructure
+  cancel-in-progress: false
+jobs:
+  review:
+    if: github.ref == 'refs/heads/main'
+    environment: platform
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TEAM_GROUP_IDS: ${{ secrets.AZURE_TEAM_GROUP_IDS }}
+      PLATFORM_UNIQUE_SUFFIX: ${{ vars.PLATFORM_UNIQUE_SUFFIX }}
+      DEMO_IMAGE: ${{ vars.DEMO_IMAGE }}
+      ARM_USE_OIDC: 'true'
+      ARM_USE_CLI: 'false'
+      ARM_USE_AZUREAD: 'true'
+      REVIEW_ENVIRONMENT: ${{ inputs.environment }}
+      REVIEW_UNIT: ${{ inputs.unit }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-tools
+      - name: Review tracked state with protected output
+        shell: bash
+        run: |
+          set +x
+          arguments=(--environment "$REVIEW_ENVIRONMENT")
+          if [ -n "$REVIEW_UNIT" ]; then
+            arguments+=(--unit "$REVIEW_UNIT")
+          fi
+          python3 scripts/review.py "${arguments[@]}"
+      - name: Remove private runtime captures
+        if: always()
+        run: rm -rf -- .runtime

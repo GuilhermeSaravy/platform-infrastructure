@@ -10,7 +10,7 @@ The included example represents **Northstar Commerce**, a fictional company with
 - Private applications on Azure App Service and private Azure Blob storage.
 - Common naming, ownership and cost tags, allowed regions, and security policies.
 - Permissions for existing team groups and Managed Identity access for applications, without storage keys or client secrets.
-- Local setup for state storage and GitHub OIDC authentication, followed by manual plan and apply workflows.
+- Local setup for state storage and GitHub OIDC authentication, followed by manual plan, apply and drift-review workflows.
 
 One example connects these pieces: the catalog dev application receives read-only access to the orders dev `exports` container. Orders owns the grant; writing files and reading its `restricted` container remain outside that grant. Separate resource and access states make it possible to test access before and after applying the permission.
 
@@ -27,7 +27,7 @@ platform-infrastructure/
 ├── scripts/            # Configuration checks, onboarding and manual operations
 ├── tests/              # Authored offline tests and live acceptance procedures
 ├── docs/               # Architecture, setup, operation and cleanup guides
-└── .github/workflows/  # Manually triggered checks, image build, plan and apply
+└── .github/workflows/  # Manually triggered checks, image build, plan, apply and review
 ```
 
 **Start with the [manual startup guide](docs/startup.md).** It explains the Azure prerequisites, local authentication, initial setup, GitHub secrets, dev deployment and cleanup. Existing Entra groups are supplied externally; this repository does not create groups or manage their members. No real Azure identifiers or credentials are committed.
@@ -37,7 +37,7 @@ For more detail:
 - [Architecture and ownership](docs/architecture.md)
 - [External configuration and the four GitHub secrets](docs/external-configuration.md)
 - [Adding a project](docs/onboarding.md) and the [reusable template](templates/README.md)
-- [Acceptance tests](docs/acceptance.md)
+- [Acceptance tests](docs/acceptance.md) and [drift/access review](docs/review.md)
 - [Implementation status](docs/status.md), [historical sources](docs/historical-audit.json) and [chronology](docs/evolution.md)
 
 The code and procedures have been reviewed by reading. Executable checks, builds and cloud deployment remain pending manual execution. Nothing runs automatically on push or pull request. Commit dates follow a reconstructed portfolio timeline; they do not prove work occurred on those dates.

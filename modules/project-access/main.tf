@@ -9,7 +9,7 @@ locals {
     }] if contains(declaration.environments, var.environment)]) : "${item.team}/${item.profile}/${item.role}" => item
   }
   workload_grants = {
-    for grant in local.project.workload_grants : "${grant.principal.project}/${grant.principal.environment}/${grant.principal.identity}/${grant.target.capability}/${grant.target.container}" => grant
+    for grant in try(local.project.workload_grants, []) : "${grant.principal.project}/${grant.principal.environment}/${grant.principal.identity}/${grant.target.capability}/${grant.target.container}" => grant
     if grant.principal.environment == var.environment
   }
   storage_capabilities = { for capability in local.project.capabilities : capability.name => capability if capability.type == "object-storage" }

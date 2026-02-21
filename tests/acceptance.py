@@ -7,6 +7,7 @@ import re
 import socket
 import sys
 import time
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
@@ -24,14 +25,24 @@ class NoRedirect(HTTPRedirectHandler):
 HTTP = build_opener(ProxyHandler({}), NoRedirect())
 
 
-def private_dns(hostname):
+def configured_dev_network():
+    try:
+        defaults = json.loads((Path(__file__).resolve().parents[1] / "organization/defaults.yaml").read_text(encoding="utf-8"))
+        network = ipaddress.ip_network(defaults["azure"]["network_cidrs"]["dev"])
+    except (OSError, ValueError, KeyError, TypeError):
+        raise Failure("Cannot read dev network defaults; use a checkout with valid organization/defaults.yaml") from None
+    if network.version != 4 or network.prefixlen != 16:
+        raise Failure("The configured dev network must use the supported IPv4 /16 allocation")
+    return network
+
+
+def private_dns(hostname, dev_network):
     try:
         addresses = {item[4][0] for item in socket.getaddrinfo(hostname, 443, type=socket.SOCK_STREAM)}
     except OSError:
         raise Failure("Private DNS lookup failed; check VPN and conditional DNS forwarding") from None
-    dev_network = ipaddress.ip_network("10.40.0.0/16")
     if not addresses or any(ipaddress.ip_address(address) not in dev_network for address in addresses):
-        raise Failure("DNS must resolve exclusively inside the dev VNet 10.40.0.0/16")
+        raise Failure("DNS must resolve exclusively inside the dev VNet configured in organization/defaults.yaml")
 
 
 def request_json(base, path, method="GET"):
@@ -81,8 +92,9 @@ def main():
         raise Failure("Use the deployed catalog/dev HTTPS hostname with no query, credentials or path")
     if arguments.storage_account != "stnsordersdev" + match.group(1):
         raise Failure("Storage account must match the orders/dev account for the catalog suffix")
-    private_dns(url.hostname)
-    private_dns(arguments.storage_account + ".blob.core.windows.net")
+    dev_network = configured_dev_network()
+    private_dns(url.hostname, dev_network)
+    private_dns(arguments.storage_account + ".blob.core.windows.net", dev_network)
     base = arguments.catalog_url.rstrip("/")
     if request_json(base, "/health") != {"status": "ok"}:
         raise Failure("Health endpoint did not return the expected contract")

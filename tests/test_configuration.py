@@ -21,8 +21,10 @@ class ConfigurationContractTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
-        for directory in ("organization", "projects"):
-            shutil.copytree(ROOT / directory, self.root / directory)
+        shutil.copytree(ROOT / "organization", self.root / "organization")
+        (self.root / "projects").mkdir()
+        for name in ("catalog", "orders"):
+            shutil.copytree(ROOT / "projects" / name, self.root / "projects" / name)
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -240,6 +242,46 @@ class ExternalConfigurationTests(unittest.TestCase):
         self.assertEqual(resolved["ARM_USE_OIDC"], "true")
         self.assertEqual(resolved["ARM_USE_CLI"], "false")
         self.assertNotIn("ARM_CLIENT_SECRET", resolved)
+
+    def test_stale_runtime_overrides_cannot_change_leaf_intent_or_state_workspace(self):
+        source = self.fixture()
+        stale = {
+            "TF_VAR_environment": "prod",
+            "TF_VAR_project_name": "differentproject",
+            "TF_VAR_team_group_ids": "stale mapping",
+            "TF_VAR_repository_root": "/different/checkout",
+            "TF_VAR_unique_suffix": "stalesuffix",
+            "TF_VAR_demo_image": "stale image",
+            "TG_TF_PATH": "/different/terraform",
+            "TERRAGRUNT_TFPATH": "/different/terraform",
+            "TERRAGRUNT_DEBUG": "true",
+            "TF_CLI_ARGS": "-unsafe",
+            "TF_CLI_ARGS_plan": "-target=other",
+            "TF_LOG": "TRACE",
+            "TF_LOG_PATH": "/unprotected/log",
+            "TF_DATA_DIR": "/different/state",
+            "TF_WORKSPACE": "prod",
+            "ARM_USE_MSI": "true",
+            "ARM_USE_AKS_WORKLOAD_IDENTITY": "true",
+            "ARM_OIDC_TOKEN": "stale token",
+            "ARM_OIDC_TOKEN_FILE_PATH": "/different/token",
+            "ARM_OIDC_REQUEST_URL": "https://different.invalid",
+            "ARM_OIDC_REQUEST_TOKEN": "stale request token",
+            "AZURE_CONFIG_DIR": "/private/interactive-cli-session",
+        }
+        source.update(stale)
+        resolved = resolve_environment(ROOT, source, workflow=False)
+        for name in stale:
+            if name not in {"TF_VAR_team_group_ids", "TF_VAR_repository_root", "TF_VAR_unique_suffix", "TF_VAR_demo_image", "TF_WORKSPACE", "ARM_USE_MSI", "ARM_USE_AKS_WORKLOAD_IDENTITY", "AZURE_CONFIG_DIR"}:
+                self.assertNotIn(name, resolved)
+        self.assertEqual({name for name in resolved if name.startswith("TF_VAR_")}, {"TF_VAR_team_group_ids", "TF_VAR_repository_root", "TF_VAR_unique_suffix", "TF_VAR_demo_image"})
+        self.assertEqual(json.loads(resolved["TF_VAR_team_group_ids"]), json.loads(source["AZURE_TEAM_GROUP_IDS"]))
+        self.assertEqual(resolved["TF_VAR_unique_suffix"], source["PLATFORM_UNIQUE_SUFFIX"])
+        self.assertEqual(resolved["TF_VAR_demo_image"], source["DEMO_IMAGE"])
+        self.assertEqual(resolved["TF_WORKSPACE"], "default")
+        self.assertEqual(resolved["ARM_USE_MSI"], "false")
+        self.assertEqual(resolved["ARM_USE_AKS_WORKLOAD_IDENTITY"], "false")
+        self.assertEqual(resolved["AZURE_CONFIG_DIR"], source["AZURE_CONFIG_DIR"])
 
     def test_mutable_or_placeholder_image_is_rejected(self):
         for image in ("ghcr.io/test-fixture/demo:latest", "ghcr.io/owner/image@sha256:" + "0" * 64):

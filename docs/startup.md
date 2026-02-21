@@ -42,10 +42,12 @@ After preparing accounts, authenticate interactively and select the subscription
 ```sh
 set +x
 umask 077
+mkdir -p .runtime
+chmod 700 .runtime
 export AZURE_TENANT_ID='<real-tenant-uuid>'
 export AZURE_SUBSCRIPTION_ID='<real-subscription-uuid>'
-az login --tenant "$AZURE_TENANT_ID" --output none
-az account set --subscription "$AZURE_SUBSCRIPTION_ID"
+az login --tenant "$AZURE_TENANT_ID" --output none > .runtime/azure-login.log 2>&1
+az account set --subscription "$AZURE_SUBSCRIPTION_ID" > .runtime/azure-account.log 2>&1
 export ARM_TENANT_ID="$AZURE_TENANT_ID"
 export ARM_SUBSCRIPTION_ID="$AZURE_SUBSCRIPTION_ID"
 export ARM_USE_CLI=true
@@ -54,11 +56,11 @@ export ARM_USE_AZUREAD=true
 unset ARM_CLIENT_SECRET ARM_CLIENT_CERTIFICATE_PATH ARM_ACCESS_KEY ARM_SAS_TOKEN TF_LOG TF_LOG_PATH
 ```
 
-Never run these placeholder commands until replacing values privately. `az account show` can confirm your selected tenant/subscription in a private terminal; do not paste its output into logs. Enable required resource providers later as the operator (registration is deliberately disabled inside Terraform):
+Never run these placeholder commands until replacing values privately. Stop after any nonzero result, inspect the protected local diagnostic privately, and remove it after resolving the issue; no raw diagnostic belongs in a public log. `az account show` can confirm your selected tenant/subscription in a private terminal; do not paste its output into logs. Enable required resource providers later as the operator (registration is deliberately disabled inside Terraform):
 
 ```sh
 for provider in Microsoft.Storage Microsoft.ManagedIdentity Microsoft.Network Microsoft.Web; do
-  az provider register --namespace "$provider" --wait --output none
+  az provider register --namespace "$provider" --wait --output none >> .runtime/provider-registration.log 2>&1
 done
 ```
 
@@ -73,7 +75,7 @@ export AZURE_TEAM_GROUP_IDS='{"platform-engineering":"<platform-group-object-id>
 export PLATFORM_UNIQUE_SUFFIX='<choose-your-suffix>'
 export TF_VAR_unique_suffix="$PLATFORM_UNIQUE_SUFFIX"
 export TF_VAR_github_repository='<your-actual-owner>/platform-infrastructure'
-export TF_VAR_bootstrap_operator_object_id="$(az ad signed-in-user show --query id -o tsv)"
+export TF_VAR_bootstrap_operator_object_id="$(az ad signed-in-user show --query id -o tsv 2>.runtime/operator-identity.log)"
 unset AZURE_CLIENT_ID ARM_CLIENT_ID
 ```
 
@@ -99,20 +101,23 @@ mkdir -p .runtime
 chmod 700 .runtime
 terraform -chdir=platform/bootstrap init -input=false -lockfile=readonly > .runtime/bootstrap-init.log 2>&1
 terraform -chdir=platform/bootstrap plan -input=false -out=../../.runtime/bootstrap.tfplan > .runtime/bootstrap-plan.log 2>&1
-terraform -chdir=platform/bootstrap show ../../.runtime/bootstrap.tfplan > .runtime/bootstrap-review.txt
+terraform -chdir=platform/bootstrap show ../../.runtime/bootstrap.tfplan > .runtime/bootstrap-review.txt 2>&1
 ```
 
 Read `.runtime/bootstrap-review.txt` privately. Ensure only the state RG/storage/container, deployment UAMI, federated credential and intended roles will be created. Then:
 
 ```sh
-terraform -chdir=platform/bootstrap apply -input=false ../../.runtime/bootstrap.tfplan > .runtime/bootstrap-apply.log 2>&1
-rm -f .runtime/bootstrap.tfplan .runtime/bootstrap-review.txt .runtime/bootstrap-init.log .runtime/bootstrap-plan.log .runtime/bootstrap-apply.log
+if terraform -chdir=platform/bootstrap apply -input=false ../../.runtime/bootstrap.tfplan > .runtime/bootstrap-apply.log 2>&1; then
+  rm -f .runtime/bootstrap.tfplan .runtime/bootstrap-review.txt .runtime/bootstrap-init.log .runtime/bootstrap-plan.log .runtime/bootstrap-apply.log
+else
+  printf '%s\n' 'Bootstrap failed. Stop and inspect the protected local diagnostics; do not continue.' >&2
+fi
 ```
 
 If any command fails, stop; inspect its protected log privately and correct the cause before continuing. Do not paste raw logs into GitHub. Never use a semicolon chain that applies after a failed plan. Back up `platform/bootstrap/terraform.tfstate` encrypted outside this repository immediately. It contains sensitive information and is excluded from Git. Obtain deployment UAMI client ID privately, without printing it:
 
 ```sh
-export AZURE_CLIENT_ID="$(az identity show --resource-group rg-platform-state --name id-platform-deployment --query clientId -o tsv)"
+export AZURE_CLIENT_ID="$(az identity show --resource-group rg-platform-state --name id-platform-deployment --query clientId -o tsv 2>.runtime/deployment-identity.log)"
 ```
 
 The local wrapper still uses your interactive user session. Do not set ARM_USE_OIDC=true locally. Before first remote initialization, wait for operator and deployment state-container roles to propagate. Attempt the normal network init below at most12 times with20-second gaps; stop and troubleshoot after four minutes. Never retry an apply blindly as an authorization-delay workaround. Group/Managed Identity token caching can take much longer; see acceptance troubleshooting.
@@ -230,3 +235,5 @@ python3 scripts/infra.py destroy projects/orders/environments/dev/resources --ap
 The explicit --approve authorizes those scoped local destroys and suppresses raw logs. Wait for dependency/identity propagation as necessary. Project-only cleanup stops here and retains shared networking. Remove separately supplied operator hosts/NICs or other attachments before deliberately destroying `platform/networking/dev`; never do so while other projects still use it. Prod is untouched by dev cleanup. To remove only catalog, first revoke its destination grants (currently orders/dev/access destroy also removes orders human roles), destroy catalog/access/resources, update destination declarations to remove catalog grants, then remove catalog declaration and apply the shared network. Do not delete declarations first.
 
 Keep bootstrap until every normal state is destroyed and encrypted backups retained. Empty/decommission remote state only after inventory/review, then deliberately remove bootstrap prevent_destroy safeguards in a reviewed change and plan its teardown from its actual retained/migrated state. This final irreversible step has no one-click script. Delete unused GHCR demo packages and separately created operator compute through their owners' processes. Remove private runtime files and revoke unused federated credentials/delegated roles when the repository is retired.
+
+After manual deployment/acceptance, use [onboarding.md](onboarding.md) for new project configuration and [review.md](review.md) for dispatch-only tracked drift/governance/access reviews. Review exit2 flags proposed changes; exit1 means incomplete coverage. Neither remediates automatically.

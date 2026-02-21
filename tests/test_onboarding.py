@@ -19,8 +19,11 @@ class OnboardingTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
-        for directory in ("organization", "projects", "templates"):
+        for directory in ("organization", "templates"):
             shutil.copytree(ROOT / directory, self.root / directory)
+        (self.root / "projects").mkdir()
+        for name in ("catalog", "orders"):
+            shutil.copytree(ROOT / "projects" / name, self.root / "projects" / name)
 
     def tearDown(self):
         self.temporary.cleanup()
